@@ -1,7 +1,26 @@
 from ultralytics import YOLO
 import torch
 import cv2
+from random import randint
+import winsound
+import threading
+import time
 
+audio_played = False
+
+def beep():
+    global audio_played
+    if audio_played:
+        return
+    audio_played = True
+    winsound.Beep(440, 500)
+    time.sleep(0.5)
+    audio_played = False
+
+def alert():
+    threading.Thread(target=beep, daemon=True).start()
+    
+# convert_mp3_to_wav("fall.mp3", "fall.wav")
 
 # Initializations
 X = 0  # Koordinat X untuk lebar dimensi get_size_bounding_box
@@ -14,7 +33,7 @@ COLOR_BLUE = (255, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_BLACK = (0, 0, 0)
 COLOR_PINK = (255, 0, 255)
-source = 'video//Sequence 01.mp4'
+source = 'video/Sequence 01.mp4'
 
 # Explain
 # 1. Load the model from the ultralytics
@@ -23,18 +42,60 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
 
-# mendapatkan ukuran bounding box
-def get_size_bounding_box(box_tensor):
-    # jika ada bounding box
-    if len(box_tensor.xyxy) > 0:
+def crop_image(image, boxes, i=None):
+    '''
+    Fungsi untuk memotong gambar berdasarkan bounding box
+    crop_image(image, box)
+    atau 
+    crop_image(image, box, i)
+    return None jika tidak berhasil memotong gambar
+    '''
+    if i is None:
+        i = randint(0, 1000000)
+
+    if len(boxes.xyxy) > 0:
         # mengambil bounding box pertama
-        box_tensor = box_tensor.xyxy[0]
+        boxes = boxes.xyxy[0]
 
         # jika bounding box pertama ada
-        if len(box_tensor) > 0:
+        if len(boxes) > 0:
 
             # mengambil nilai bounding box dari tensor ke list
-            box_list = box_tensor.tolist()
+            box = boxes.tolist()
+            # Mendapatkan koordinat bounding box
+            x_min, y_min, x_max, y_max = map(int, box)
+            # print(x_min, y_min, x_max, y_max,box)
+            # Memotong gambar
+            crop_image = image[y_min:y_max, x_min:x_max]
+
+            # # lokasi penyimpanan gambar
+            # path = 'video/'
+            # # Nama file gambar
+            # filename = str(i) + '_object' + '.jpg'
+
+            # # Full path file gambar
+            # path = path + filename
+
+            # # Menyimpan gambar
+            # cv2.imwrite(path, crop_image)
+
+            return crop_image
+    return None
+
+# mendapatkan ukuran bounding box
+
+
+def get_size_bounding_box(boxes):
+    # jika ada bounding box
+    if len(boxes.xyxy) > 0:
+        # mengambil bounding box pertama
+        boxes = boxes.xyxy[0]
+
+        # jika bounding box pertama ada
+        if len(boxes) > 0:
+
+            # mengambil nilai bounding box dari tensor ke list
+            box_list = boxes.tolist()
 
             # mengambil nilai x_min, y_min, x_max, y_max
             x_min = box_list[0]
@@ -55,6 +116,8 @@ def get_size_bounding_box(box_tensor):
         return (0, 0)
 
 # Mendapatkan kondisi jatuh berdasarkan bounding box
+
+
 def process_bounding_box(dimension):
     '''
     Cara penggunaan:
@@ -70,6 +133,8 @@ def process_bounding_box(dimension):
         return None
 
 # Mendapatkan lokasi leher dari keypoints
+
+
 def neck_location(keypoints_xy):
     neck_coord_X6, neck_coord_Y6 = keypoints_xy[0][6]
     neck_coord_X5, neck_coord_Y5 = keypoints_xy[0][5]
@@ -77,6 +142,8 @@ def neck_location(keypoints_xy):
             (neck_coord_Y5 + neck_coord_Y6) // 2)
 
 # Mendapatkan lokasi pinggang dari keypoints
+
+
 def waist_location(keypoints_xy):
     waist_coord_X11, waist_coord_Y11 = keypoints_xy[0][11]
     waist_coord_X12, waist_coord_Y12 = keypoints_xy[0][12]
@@ -84,6 +151,8 @@ def waist_location(keypoints_xy):
             (waist_coord_Y11 + waist_coord_Y12) // 2)
 
 # Proses koordinat leher dan pinggang
+
+
 def process_coordinates(neck, waist, video_height, range):
     # leher dan pinggang adalah touple koordinat leher dan pinggang
     # range adalah ukuran tambahan sebagai identifikasi jarak leher dan pinggang
@@ -93,6 +162,8 @@ def process_coordinates(neck, waist, video_height, range):
     return False
 
 # ====================================================
+
+
 def count_fps(result):
     fps = 0
     try:
@@ -103,6 +174,8 @@ def count_fps(result):
     return fps
 
 # Print information
+
+
 def put_information(image, neck, waist, bounding_dimension, fps, video_height, color):
     cv2.circle(image, (int(neck[X]), int(neck[Y])), 10, color, -1)
     cv2.putText(image, f'neck({neck[X]},{neck[Y]})', (int(neck[X]) + 20, int(neck[Y]) + 10),
@@ -135,18 +208,18 @@ def put_information(image, neck, waist, bounding_dimension, fps, video_height, c
 # Main function
 def main():
     frame_video = model(
-        source=source, 
-        show=False, 
-        save=False, 
-        stream=True, 
-        show_boxes=False, 
+        source=source,
+        show=False,
+        save=False,
+        stream=True,
+        show_boxes=False,
         optimize=True,
-        save_txt=False, 
-        half=True, 
-        max_det=1, 
-        stream_buffer=True, 
-        show_labels=False, 
-        show_conf=False, 
+        save_txt=False,
+        half=False,
+        max_det=1,
+        stream_buffer=True,
+        show_labels=False,
+        show_conf=False,
         verbose=False
     )
     for result in frame_video:
@@ -188,7 +261,10 @@ def main():
 
                 if process_coordinates(neck, waist, video_height, bounding_dimension[Y]//4) or process_bounding_box(bounding_dimension) == True:
                     color = COLOR_RED
+                    alert()
                     print("Fall Detected")
+                    crop_image(image, result.boxes)
+                    # cv2.waitKey(0)
 
                 put_information(image, neck, waist,
                                 bounding_dimension, fps, video_height, color)
