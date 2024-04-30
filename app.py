@@ -5,6 +5,10 @@ from random import randint
 import winsound
 import threading
 import time
+import pygame
+
+pygame.mixer.init()
+pygame.mixer.set_num_channels(1000)
 
 audio_played = False
 
@@ -16,9 +20,23 @@ def beep():
     winsound.Beep(440, 500)
     time.sleep(0.5)
     audio_played = False
+    
+def play_mp3(file):
+    # use audio_played to prevent multiple audio played at the same time
+    global audio_played
+    if audio_played:
+        return
+    audio_played = True
+    pygame.mixer.music.load(file)
+    pygame.mixer.music.play()
+    audio_duration = pygame.mixer.Sound(file).get_length()
+    time.sleep(audio_duration)
+    
+    audio_played = False
+    
 
 def alert():
-    threading.Thread(target=beep, daemon=True).start()
+    threading.Thread(target=play_mp3, args=("fall.mp3",), daemon=True).start()
     
 # convert_mp3_to_wav("fall.mp3", "fall.wav")
 
