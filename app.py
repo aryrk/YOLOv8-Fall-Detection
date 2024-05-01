@@ -194,28 +194,31 @@ def count_fps(result):
 # Print information
 
 
-def put_information(image, neck, waist, bounding_dimension, fps, video_height, color):
+def put_information(image, neck, waist, bounding_dimension, fps, video_height, color, status):
     cv2.circle(image, (int(neck[X]), int(neck[Y])), 10, color, -1)
     cv2.putText(image, f'neck({neck[X]},{neck[Y]})', (int(neck[X]) + 20, int(neck[Y]) + 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_BLACK, 1)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
 
     cv2.circle(image, (int(waist[X]), int(waist[Y])), 10, color, -1)
     cv2.putText(image, f'waist({waist[X]}, {waist[Y]})', (int(waist[X]) + 20, int(waist[Y]) + 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLOR_BLACK, 2)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+    
     cv2.putText(image, f'FPS: {fps}', (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+    cv2.putText(image, f'Status: {str(status)}', (10, 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-    cv2.putText(image, f'NeckY: {neck[1]}', (10, 60),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-    cv2.putText(image, f"NeckX: {neck[0]}'", (10, 120),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    # cv2.putText(image, f'NeckY: {neck[1]}', (10, 60),
+    #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    # cv2.putText(image, f"NeckX: {neck[0]}'", (10, 120),
+    #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-    cv2.putText(image, f"PinggangY: {waist[Y]} + {bounding_dimension[Y]//4} = {waist[Y]+bounding_dimension[Y]//4}, - {bounding_dimension[Y]//4} = {waist[Y]-bounding_dimension[Y]//4}", (10, 150),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-    cv2.putText(image, f"PinggangX: {waist[X]}", (10, 180),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-    cv2.putText(image, f'Height: {video_height}', (10, 90),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    # cv2.putText(image, f"PinggangY: {waist[Y]} + {bounding_dimension[Y]//4} = {waist[Y]+bounding_dimension[Y]//4}, - {bounding_dimension[Y]//4} = {waist[Y]-bounding_dimension[Y]//4}", (10, 150),
+    #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    # cv2.putText(image, f"PinggangX: {waist[X]}", (10, 180),
+    #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    # cv2.putText(image, f'Height: {video_height}', (10, 90),
+    #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
     cv2.circle(image, (int(waist[X]), int(
         waist[Y]+bounding_dimension[Y]//4)), 10, COLOR_BLACK, -1)
@@ -259,33 +262,29 @@ def main():
 
         # mendapatkan nilai fps
         fps = count_fps(result)
+        
+        # set status fall
+        status = 'not fall'
 
         #
         for i, point in enumerate(keypoints_xy[0]):
             if i == 5 or i == 11:
                 # Cari lokasi Neck
                 neck = neck_location(keypoints_xy)
-                # neck_coord_X6, neck_coord_Y6 = keypoints_xy[0][6]
-                # neck_coord_X5, neck_coord_Y5 = keypoints_xy[0][5]
-                # neck = ((neck_coord_X5 + neck_coord_X6) // 2,
-                #         (neck_coord_Y5 + neck_coord_Y6) // 2)
 
                 # Cari lokasi Pinggang
                 waist = waist_location(keypoints_xy)
-                # waist_coord_X11, waist_coord_Y11 = keypoints_xy[0][11]
-                # waist_coord_X12, waist_coord_Y12 = keypoints_xy[0][12]
-                # waist = ((waist_coord_X11 + waist_coord_X12) // 2,
-                #          (waist_coord_Y11 + waist_coord_Y12) // 2)
 
-                if process_coordinates(neck, waist, video_height, bounding_dimension[Y]//4) or process_bounding_box(bounding_dimension) == True:
+                if process_coordinates(neck, waist, video_height, bounding_dimension[Y]//4) and process_bounding_box(bounding_dimension) == True:
                     color = COLOR_RED
+                    status = 'fall'
                     alert()
                     print("Fall Detected")
                     crop_image(image, result.boxes)
                     # cv2.waitKey(0)
 
                 put_information(image, neck, waist,
-                                bounding_dimension, fps, video_height, color)
+                                bounding_dimension, fps, video_height, color, status)
 
         # print(neck)
 
