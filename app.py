@@ -9,13 +9,13 @@ import pygame
 import object_detection
 
 
-
 ''' Start Utility functions
 ================================================================'''
 pygame.mixer.init()
 pygame.mixer.set_num_channels(1000)
 
 audio_played = False
+
 
 def beep():
     global audio_played
@@ -25,7 +25,8 @@ def beep():
     winsound.Beep(440, 500)
     time.sleep(0.5)
     audio_played = False
-    
+
+
 def play_mp3(file):
     # use audio_played to prevent multiple audio played at the same time
     global audio_played
@@ -36,13 +37,15 @@ def play_mp3(file):
     pygame.mixer.music.play()
     audio_duration = pygame.mixer.Sound(file).get_length()
     time.sleep(audio_duration)
-    
+
     audio_played = False
-    
+
 
 def alert():
-    threading.Thread(target=play_mp3, args=("audio/fall.mp3",), daemon=True).start()
-    
+    threading.Thread(target=play_mp3, args=(
+        "audio/fall.mp3",), daemon=True).start()
+
+
 ''' End of Utility functions
 ================================================================'''
 
@@ -60,7 +63,7 @@ COLOR_BLUE = (255, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_BLACK = (0, 0, 0)
 COLOR_PINK = (255, 0, 255)
-source = 'video/VID_20240305_083429.mp4'
+source = 'video/Sequence 01.mp4'
 
 # Explain
 # 1. Load the model from the ultralytics
@@ -187,7 +190,7 @@ def process_coordinates(neck, waist, video_height, range):
     # leher dan pinggang adalah touple koordinat leher dan pinggang
     # range adalah ukuran tambahan sebagai identifikasi jarak leher dan pinggang
     # range adalah jarak tambahan sebagai identifikasi jarak leher dan pinggang
-    if neck[Y] >= waist[Y]-range and neck[Y] <= waist[Y]+range and neck[Y]:
+    if neck[Y] >= waist[Y]-range and neck[Y] <= waist[Y]+range and neck[Y] >= (video_height//2):
         return True
     return False
 
@@ -214,7 +217,7 @@ def put_information(image, neck, waist, bounding_dimension, fps, video_height, c
     cv2.circle(image, (int(waist[X]), int(waist[Y])), 10, color, -1)
     cv2.putText(image, f'waist({waist[X]}, {waist[Y]})', (int(waist[X]) + 20, int(waist[Y]) + 10),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-    
+
     cv2.putText(image, f'FPS: {fps}', (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
     cv2.putText(image, f'Status: {str(status)}', (10, 60),
@@ -274,7 +277,7 @@ def main():
 
         # mendapatkan nilai fps
         fps = count_fps(result)
-        
+
         # set status fall
         status = 'not fall'
 
