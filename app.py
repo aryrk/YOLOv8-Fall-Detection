@@ -39,7 +39,7 @@ def play_mp3(file):
     
 
 def alert():
-    threading.Thread(target=play_mp3, args=("fall.mp3",), daemon=True).start()
+    threading.Thread(target=play_mp3, args=("audio/fall.mp3",), daemon=True).start()
     
 ''' End of Utility functions
 ================================================================'''
@@ -58,11 +58,11 @@ COLOR_BLUE = (255, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_BLACK = (0, 0, 0)
 COLOR_PINK = (255, 0, 255)
-source = 'video/Sequence 01.mp4'
+source = 'video/sequence-1.mp4'
 
 # Explain
 # 1. Load the model from the ultralytics
-model = YOLO('yolov8n-pose.pt')
+model = YOLO('model/yolov8n-pose.pt')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
@@ -286,8 +286,11 @@ def main():
                     color = COLOR_RED
                     status = 'fall'
                     alert()
-                    print("Fall Detected")
-                    crop_image(image, result.boxes)
+                    print("Fall Detected by Pose")
+                    import object_detection
+                    if object_detection.object_detection(crop_image(image, result.boxes)):
+                        print("Fall Detected by Object Detection")
+                        # alert()
                     # cv2.waitKey(0)
 
                 put_information(image, neck, waist,
