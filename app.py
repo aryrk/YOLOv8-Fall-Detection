@@ -7,6 +7,9 @@ import threading
 import time
 import pygame
 
+
+''' Start Utility functions
+================================================================'''
 pygame.mixer.init()
 pygame.mixer.set_num_channels(1000)
 
@@ -38,7 +41,11 @@ def play_mp3(file):
 def alert():
     threading.Thread(target=play_mp3, args=("fall.mp3",), daemon=True).start()
     
-# convert_mp3_to_wav("fall.mp3", "fall.wav")
+''' End of Utility functions
+================================================================'''
+
+''' Start Pose functions
+================================================================'''
 
 # Initializations
 X = 0  # Koordinat X untuk lebar dimensi get_size_bounding_box
