@@ -6,6 +6,8 @@ import winsound
 import threading
 import time
 import pygame
+import object_detection
+
 
 
 ''' Start Utility functions
@@ -286,12 +288,12 @@ def main():
                 waist = waist_location(keypoints_xy)
 
                 if process_coordinates(neck, waist, video_height, bounding_dimension[Y]//4) and process_bounding_box(bounding_dimension) == True:
-                    color = COLOR_RED
-                    status = 'fall'
-                    alert()
                     print("Fall Detected by Pose")
-                    import object_detection
+                    # print(crop_image(image, result.boxes))
                     if object_detection.object_detection(crop_image(image, result.boxes)):
+                        color = COLOR_RED
+                        status = 'fall'
+                        alert()
                         print("Fall Detected by Object Detection")
                         # alert()
                     # cv2.waitKey(0)

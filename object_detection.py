@@ -1,9 +1,9 @@
-import logging
+# import logging
 from ultralytics import YOLO
 import torch
 
 # Konfigurasi pengaturan logging
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+# logging.basicConfig(level=logging.INFO, format='%(message)s')
 object_model = 'model/600_epoch/best.pt'
 object_model = YOLO(object_model)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
