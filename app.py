@@ -58,12 +58,15 @@ COLOR_BLUE = (255, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_BLACK = (0, 0, 0)
 COLOR_PINK = (255, 0, 255)
-source = 'video/sequence-1.mp4'
+source = 'video/VID_20240305_083429.mp4'
 
 # Explain
 # 1. Load the model from the ultralytics
 model = YOLO('model/yolov8n-pose.pt')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+half_param = True
+if device == 'cuda':
+    half_param = False
 model.to(device)
 
 
@@ -243,7 +246,7 @@ def main():
         show_boxes=False,
         optimize=True,
         save_txt=False,
-        half=False,
+        half=half_param,
         max_det=1,
         stream_buffer=True,
         show_labels=False,
